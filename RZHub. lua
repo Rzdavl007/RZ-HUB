@@ -1,1 +1,191 @@
 
+-- RZ HUB | BLACK EDITION
+-- Para seu proprio jogo no Roblox Studio
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RZHub"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function round(obj)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 10)
+    c.Parent = obj
+end
+
+-- Botao arrastavel
+local toggle = Instance.new("TextButton")
+toggle.Size = UDim2.fromOffset(110, 45)
+toggle.Position = UDim2.new(0, 20, 0.4, 0)
+toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggle.TextColor3 = Color3.new(1, 1, 1)
+toggle.Text = "RZ HUB  ☰"
+toggle.Font = Enum.Font.GothamBold
+toggle.TextSize = 15
+toggle.Parent = gui
+round(toggle)
+
+local outline = Instance.new("UIStroke")
+outline.Color = Color3.fromRGB(100, 100, 100)
+outline.Parent = toggle
+
+-- Janela principal
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(250, 300)
+main.Position = UDim2.new(0.5, -125, 0.5, -150)
+main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+main.Visible = false
+main.Parent = gui
+round(main)
+
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(90, 90, 90)
+border.Parent = main
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -45, 0, 45)
+title.Position = UDim2.fromOffset(12, 0)
+title.BackgroundTransparency = 1
+title.Text = "RZ HUB"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 23
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = main
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(35, 35)
+close.Position = UDim2.new(1, -40, 0, 5)
+close.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+close.Text = "X"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.Parent = main
+round(close)
+
+local list = Instance.new("ScrollingFrame")
+list.Size = UDim2.new(1, -20, 1, -60)
+list.Position = UDim2.fromOffset(10, 50)
+list.BackgroundTransparency = 1
+list.BorderSizePixel = 0
+list.ScrollBarThickness = 4
+list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+list.CanvasSize = UDim2.new(0, 0, 0, 0)
+list.Parent = main
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 8)
+layout.Parent = list
+
+local function humanoid()
+    local char = player.Character
+    return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+local function addButton(text, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -4, 0, 42)
+    b.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Text = text
+    b.Font = Enum.Font.GothamSemibold
+    b.TextSize = 14
+    b.Parent = list
+    round(b)
+    b.Activated:Connect(callback)
+    return b
+end
+
+toggle.Activated:Connect(function()
+    main.Visible = not main.Visible
+end)
+
+close.Activated:Connect(function()
+    main.Visible = false
+end)
+
+-- Speed ON/OFF
+local speedOn = false
+addButton("Speed: OFF", function()
+    speedOn = not speedOn
+    local h = humanoid()
+    if h then h.WalkSpeed = speedOn and 32 or 16 end
+end)
+
+-- Super Jump ON/OFF
+local jumpOn = false
+addButton("Super Jump: OFF", function()
+    jumpOn = not jumpOn
+    local h = humanoid()
+    if h then
+        h.UseJumpPower = true
+        h.JumpPower = jumpOn and 100 or 50
+    end
+end)
+
+-- Curar
+addButton("Curar jogador", function()
+    local h = humanoid()
+    if h then h.Health = h.MaxHealth end
+end)
+
+-- Restaurar
+addButton("Restaurar atributos", function()
+    speedOn = false
+    jumpOn = false
+    local h = humanoid()
+    if h then
+        h.WalkSpeed = 16
+        h.UseJumpPower = true
+        h.JumpPower = 50
+    end
+end)
+
+-- Arrastar botao no PC e celular
+local dragging = false
+local moved = false
+local startPos
+local startButtonPos
+local activeTouch
+
+toggle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        moved = false
+        startPos = input.Position
+        startButtonPos = toggle.Position
+        if input.UserInputType == Enum.UserInputType.Touch then
+            activeTouch = input
+        end
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input == activeTouch) then
+        local delta = input.Position - startPos
+        if delta.Magnitude > 8 then moved = true end
+        toggle.Position = UDim2.new(
+            startButtonPos.X.Scale,
+            startButtonPos.X.Offset + delta.X,
+            startButtonPos.Y.Scale,
+            startButtonPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input == activeTouch then
+        dragging = false
+        activeTouch = nil
+    end
+end)
+
+print("RZ HUB carregado!")
+
